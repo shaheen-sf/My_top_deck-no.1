@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1517">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ضرغام</title>
+<style>
+:root{
+  --bg:#0b1517; --surface:#12262a; --surface2:#183037; --text:#e8f1ef; --muted:#8fa9a6;
+  --teal:#2ec4a6; --amber:#f2b84b; --danger:#ff7b72; --line:#23424a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Noto Naskh Arabic","Noto Sans Arabic",Tahoma,sans-serif;
+  padding:max(14px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;overflow-x:hidden;line-height:1.6}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{margin:0;font-size:1.5rem;letter-spacing:0}
+h1 small{display:block;font-size:.75rem;color:var(--muted);font-weight:400}
+.badge{font-size:.8rem;padding:4px 12px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.on{color:var(--teal);border-color:var(--teal)}
+.badge.off{color:var(--amber);border-color:var(--amber)}
+main{flex:1;display:flex;flex-direction:column;align-items:center;gap:14px;min-height:0}
+.stage{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:6px}
+#orb{width:150px;height:150px;border-radius:50%;border:0;cursor:pointer;color:var(--bg);font-size:1rem;font-weight:700;
+  background:radial-gradient(circle at 35% 30%,#7be3cf,var(--teal) 55%,#13806b);box-shadow:0 0 0 0 rgba(46,196,166,.5);transition:transform .2s,background .3s}
+#orb:focus-visible{outline:3px solid var(--amber);outline-offset:4px}
+#orb[data-s="off"]{background:radial-gradient(circle at 35% 30%,#3a5459,#26393d 60%,#1b2a2d);color:var(--text)}
+#orb[data-s="listen"]{animation:pulse 2.4s infinite}
+#orb[data-s="awake"]{background:radial-gradient(circle at 35% 30%,#ffe19a,var(--amber) 55%,#b97f12);animation:pulse2 1s infinite;transform:scale(1.07)}
+#orb[data-s="speak"]{background:radial-gradient(circle at 35% 30%,#bfeee4,#52d6bb 55%,#1c9a82);animation:pulse2 .7s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,196,166,.45)}70%{box-shadow:0 0 0 28px rgba(46,196,166,0)}100%{box-shadow:0 0 0 0 rgba(46,196,166,0)}}
+@keyframes pulse2{0%{box-shadow:0 0 0 0 rgba(242,184,75,.55)}70%{box-shadow:0 0 0 34px rgba(242,184,75,0)}100%{box-shadow:0 0 0 0 rgba(242,184,75,0)}}
+@media (prefers-reduced-motion:reduce){#orb{animation:none!important}}
+#status{font-size:1.05rem;min-height:1.6em;text-align:center}
+#heard{color:var(--muted);font-size:.95rem;min-height:1.5em;text-align:center;max-width:100%;overflow-wrap:anywhere}
+.log{width:100%;max-width:560px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;min-height:90px;padding:2px}
+.msg{padding:9px 13px;border-radius:14px;max-width:88%;overflow-wrap:anywhere}
+.msg.me{background:var(--surface2);align-self:flex-start;border-end-start-radius:4px}
+.msg.bot{background:var(--surface);border:1px solid var(--line);align-self:flex-end;border-end-end-radius:4px}
+.msg a{color:var(--amber);font-weight:700}
+form.typed{display:flex;gap:8px;width:100%;max-width:560px}
+input,button.btn,select{font:inherit}
+input[type=text],input[type=tel]{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:11px 14px}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+button.btn{background:var(--teal);color:#06231d;border:0;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer}
+button.btn.alt{background:var(--surface2);color:var(--text);border:1px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:560px}
+.chip{background:var(--surface);border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:4px 12px;font-size:.82rem;cursor:pointer}
+details{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+summary{cursor:pointer;font-weight:700}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.row label{flex:1 1 100%;color:var(--muted);font-size:.85rem}
+ul.items{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+ul.items li{display:flex;justify-content:space-between;gap:8px;background:var(--surface2);border-radius:10px;padding:6px 10px;overflow-wrap:anywhere}
+ul.items button{background:none;border:0;color:var(--danger);cursor:pointer;font:inherit}
+.note{color:var(--muted);font-size:.82rem;margin:8px 0 0}
+#timers{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.timer{background:var(--surface2);border:1px solid var(--amber);color:var(--amber);padding:3px 12px;border-radius:99px;font-variant-numeric:tabular-nums}
+#warn{display:none;background:#2a1d10;border:1px solid var(--amber);color:var(--amber);padding:10px 14px;border-radius:12px;max-width:560px;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>ضرغام<small>مساعدك الصوتي العربي</small></h1>
+  <span id="net" class="badge">...</span>
+</header>
+
+<main>
+  <div id="warn"></div>
+  <section class="stage" aria-live="polite">
+    <button id="orb" data-s="off" type="button" aria-label="تشغيل أو إيقاف الاستماع">اضغط للتشغيل</button>
+    <div id="status">قل «ضرغام» ثم أمرك</div>
+    <div id="heard"></div>
+    <div id="timers"></div>
+  </section>
+
+  <div class="log" id="log"></div>
+
+  <form class="typed" id="typed" autocomplete="off">
+    <input type="text" id="typedIn" placeholder="اكتب أمرك هنا (يعمل بدون إنترنت أيضًا)" aria-label="اكتب أمرًا">
+    <button class="btn" type="submit">نفّذ</button>
+  </form>
+
+  <div class="chips" id="chips"></div>
+
+  <details>
+    <summary>جهات الاتصال</summary>
+    <div class="row">
+      <input type="text" id="cName" placeholder="الاسم" aria-label="اسم جهة الاتصال">
+      <input type="tel" id="cNum" placeholder="الرقم مع رمز الدولة" aria-label="الرقم" dir="ltr">
+      <button class="btn" id="cAdd" type="button">إضافة</button>
+    </div>
+    <ul class="items" id="cList"></ul>
+    <p class="note">بعد الإضافة قل: «ضرغام اتصل بأحمد» أو «ضرغام أرسل رسالة إلى أحمد وقل أنا في الطريق».</p>
+  </details>
+
+  <details>
+    <summary>ملاحظاتي</summary>
+    <ul class="items" id="nList"></ul>
+    <p class="note">قل: «ضرغام سجّل ملاحظة ...» أو «اقرأ ملاحظاتي».</p>
+  </details>
+
+  <details>
+    <summary>الإعدادات</summary>
+    <div class="row">
+      <label for="alias">اسم نداء بديل (إذا لم يفهم الجهاز كلمة «ضرغام» جيدًا)</label>
+      <input type="text" id="alias" placeholder="مثال: دغرام" aria-label="نداء بديل">
+      <button class="btn alt" id="aliasSave" type="button">حفظ</button>
+    </div>
+    <div class="row">
+      <label>العمل بدون إنترنت</label>
+      <button class="btn alt" id="offlinePack" type="button">تحميل حزمة التعرف الصوتي العربية</button>
+    </div>
+    <p class="note" id="offNote"></p>
+  </details>
+</main>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+var synth=window.speechSynthesis;
+
+/* ---------- تخزين ---------- */
+function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var contacts=load('dh_contacts',{});
+var notes=load('dh_notes',[]);
+var alias=load('dh_alias','');
+
+/* ---------- تطبيع النص العربي ---------- */
+var AR_DIG='٠١٢٣٤٥٦٧٨٩';
+function norm(s){
+  s=String(s||'').replace(/[ً-ٰٟـ]/g,'')
+   .replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
+   .replace(/[٠-٩]/g,function(d){return AR_DIG.indexOf(d)})
+   .replace(/،/g,' ').toLowerCase();
+  return s.replace(/[^؀-ۿa-z0-9\s.+\-*\/]/g,' ').replace(/\s+/g,' ').trim();
+}
+function lev(a,b){
+  var m=a.length,n=b.length,i,j,d=[];
+  for(i=0;i<=m;i++){d[i]=[i]}
+  for(j=1;j<=n;j++){d[0][j]=j}
+  for(i=1;i<=m;i++)for(j=1;j<=n;j++){
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  }
+  return d[m][n];
+}
+
+/* ---------- كلمة النداء ---------- */
+var WAKE=['ضرغام','ظرغام','ضرغم','زرغام','ضرقام','ضرجام','ضرعام','ضرغان','دارغام','ضرجم','ضرغامه'];
+function wakeList(){var l=WAKE.slice();if(alias){l.push(norm(alias))}return l}
+// يرجع فهرس كلمة النداء داخل الكلمات أو -1
+function findWake(words){
+  var list=wakeList();
+  for(var i=0;i<words.length;i++){
+    var w=words[i];
+    if(w.length>3&&w.charAt(0)==='و'&&list.indexOf(w)<0){var w2=w.slice(1);if(isWake(w2,list))return i}
+    if(isWake(w,list))return i;
+  }
+  return -1;
+}
+function isWake(w,list){
+  if(w.length<3)return false;
+  for(var k=0;k<list.length;k++){
+    var c=list[k];
+    if(w===c)return true;
+    if(c.length>=5&&Math.abs(w.length-c.length)<=1&&lev(w,c)<=1)return true;
+  }
+  return false;
+}
+
+/* ---------- الأرقام العربية ---------- */
+var NUMW={صفر:0,واحد:1,واحده:1,احد:1,اثنين:2,اثنان:2,اثنتين:2,ثنتين:2,اثنا:2,اثني:2,ثلاثه:3,ثلاث:3,اربعه:4,اربع:4,خمسه:5,خمس:5,سته:6,ست:6,سبعه:7,سبع:7,ثمانيه:8,ثماني:8,ثمان:8,تسعه:9,تسع:9,عشره:10,عشر:10,عشرين:20,عشرون:20,ثلاثين:30,ثلاثون:30,اربعين:40,اربعون:40,خمسين:50,خمسون:50,ستين:60,ستون:60,سبعين:70,سبعون:70,ثمانين:80,ثمانون:80,تسعين:90,تسعون:90,مئه:100,مائه:100,ميه:100,مايه:100,مئتين:200,مائتين:200,ميتين:200,نصف:0.5,ربع:0.25};
+function numTok(t){
+  if(/^\d+(\.\d+)?$/.test(t))return parseFloat(t);
+  if(NUMW.hasOwnProperty(t))return NUMW[t];
+  if(t.length>2&&t.charAt(0)==='و'&&NUMW.hasOwnProperty(t.slice(1)))return NUMW[t.slice(1)];
+  return null;
+}
+function parseNum(tokens){
+  var sum=0,found=false;
+  for(var i=0;i<tokens.length;i++){var v=numTok(tokens[i]);if(v!==null){sum+=v;found=true}}
+  return found?sum:null;
+}
+
+/* ---------- صوت: نطق ---------- */
+var voices=[];
+function loadVoices(){voices=synth?synth.getVoices():[]}
+if(synth){loadVoices();synth.onvoiceschanged=loadVoices}
+function speak(t){
+  return new Promise(function(res){
+    if(!synth){res();return}
+    try{synth.cancel()}catch(e){}
+    var u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';u.rate=.95;
+    var v=null;for(var i=0;i<voices.length;i++){if(/^ar/i.test(voices[i].lang)){v=voices[i];break}}
+    if(v)u.voice=v;
+    var done=false;function fin(){if(!done){done=true;clearTimeout(tm);res()}}
+    var tm=setTimeout(fin,Math.max(2500,t.length*140));
+    u.onend=fin;u.onerror=fin;
+    synth.speak(u);
+  });
+}
+function stopSpeak(){try{synth&&synth.cancel()}catch(e){}}
+
+/* ---------- نغمات ---------- */
+var AC=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function beep(freq,dur,when){
+  var a=ac();if(!a)return;var o=a.createOscillator(),g=a.createGain();
+  o.frequency.value=freq;o.type='sine';o.connect(g);g.connect(a.destination);
+  var t=a.currentTime+(when||0);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.25,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.start(t);o.stop(t+dur+.02);
+}
+function chime(){beep(660,.15,0);beep(990,.2,.14)}
+function alarm(){for(var i=0;i<6;i++){beep(880,.25,i*.5)}}
+
+/* ---------- واجهة ---------- */
+var orb=$('#orb'),statusEl=$('#status'),heardEl=$('#heard'),logEl=$('#log');
+function setState(s,txt){orb.dataset.s=s;orb.textContent=({off:'اضغط للتشغيل',listen:'أسمعك',awake:'تفضّل',speak:'...'})[s];if(txt)statusEl.textContent=txt}
+function addMsg(who,text,link){
+  var d=document.createElement('div');d.className='msg '+who;d.textContent=text;
+  if(link){d.appendChild(document.createElement('br'));var a=document.createElement('a');a.href=link.url;a.target='_blank';a.rel='noopener';a.textContent=link.label||'افتح';d.appendChild(a)}
+  logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;
+  while(logEl.children.length>40)logEl.removeChild(logEl.firstChild);
+}
+function showNet(){
+  var n=$('#net');
+  if(navigator.onLine){n.textContent='متصل بالإنترنت';n.className='badge on'}
+  else{n.textContent='بدون إنترنت';n.className='badge off'}
+}
+window.addEventListener('online',showNet);window.addEventListener('offline',showNet);showNet();
+function warn(t){var w=$('#warn');w.textContent=t;w.style.display=t?'block':'none'}
+
+/* ---------- المؤقتات ---------- */
+var timers=[];
+function drawTimers(){
+  var box=$('#timers');box.textContent='';
+  timers.forEach(function(t){
+    var left=Math.max(0,Math.round((t.end-Date.now())/1000));
+    var m=Math.floor(left/60),s=left%60,h=Math.floor(m/60);m=m%60;
+    var sp=document.createElement('span');sp.className='timer';
+    sp.textContent=(h?h+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    box.appendChild(sp);
+  });
+}
+setInterval(function(){
+  var now=Date.now();
+  for(var i=timers.length-1;i>=0;i--){
+    if(timers[i].end<=now){var t=timers.splice(i,1)[0];fireTimer(t)}
+  }
+  drawTimers();
+},1000);
+function fireTimer(t){
+  alarm();
+  var msg='انتهى المؤقت'+(t.label?': '+t.label:'');
+  addMsg('bot',msg);
+  if(navigator.vibrate)navigator.vibrate([400,200,400]);
+  setTimeout(function(){say(msg)},800);
+}
+function addTimer(sec,label){timers.push({end:Date.now()+sec*1000,label:label});drawTimers()}
+
+/* ---------- الأوامر ---------- */
+var APPS={
+  'يوتيوب':{url:'https://www.youtube.com',n:'يوتيوب'},
+  'جوجل':{url:'https://www.google.com',n:'جوجل'},'قوقل':{url:'https://www.google.com',n:'جوجل'},
+  'واتساب':{url:'https://wa.me/',n:'واتساب'},'واتس اب':{url:'https://wa.me/',n:'واتساب'},'واتس':{url:'https://wa.me/',n:'واتساب'},
+  'تيليجرام':{url:'https://t.me/',n:'تيليجرام'},'تلقرام':{url:'https://t.me/',n:'تيليجرام'},'تلجرام':{url:'https://t.me/',n:'تيليجرام'},
+  'فيسبوك':{url:'https://www.facebook.com',n:'فيسبوك'},'فيس بوك':{url:'https://www.facebook.com',n:'فيسبوك'},
+  'انستقرام':{url:'https://www.instagram.com',n:'انستقرام'},'انستجرام':{url:'https://www.instagram.com',n:'انستقرام'},
+  'تويتر':{url:'https://x.com',n:'إكس'},'اكس':{url:'https://x.com',n:'إكس'},
+  'سناب شات':{url:'https://www.snapchat.com',n:'سناب شات'},'سناب':{url:'https://www.snapchat.com',n:'سناب شات'},
+  'تيك توك':{url:'https://www.tiktok.com',n:'تيك توك'},
+  'خرائط':{url:'https://maps.google.com',n:'الخرائط'},'الخرائط':{url:'https://maps.google.com',n:'الخرائط'},
+  'جيميل':{url:'https://mail.google.com',n:'جيميل'},'البريد':{url:'https://mail.google.com',n:'البريد'},
+  'ويكيبيديا':{url:'https://ar.wikipedia.org',n:'ويكيبيديا'},
+  'مترجم':{url:'https://translate.google.com',n:'المترجم'},'ترجمه':{url:'https://translate.google.com',n:'المترجم'}
+};
+var JOKES=[
+  'قال واحد لصاحبه: وش أصعب شيء في الامتحان؟ قال: الورقة اللي قدامك!',
+  'واحد بخيل اشترى مروحة، وكل ما يحس بحر يقف قدامها ويدور حاله.',
+  'سألوا طالب: متى اخترعت الكهرباء؟ قال: حين انقطعت.',
+  'قال المعلم: من يعطيني جملة فيها فعل؟ قال تلميذ: أنا ما عملت واجبي.'
+];
+var WCODE={0:'سماء صافية',1:'غالبًا صافية',2:'غائم جزئيًا',3:'غائم',45:'ضباب',48:'ضباب',51:'رذاذ خفيف',53:'رذاذ',55:'رذاذ كثيف',61:'مطر خفيف',63:'مطر',65:'مطر غزير',71:'ثلج خفيف',73:'ثلج',75:'ثلج كثيف',80:'زخات مطر',81:'زخات مطر',82:'زخات غزيرة',95:'عواصف رعدية',96:'عواصف رعدية',99:'عواصف رعدية'};
+
+function trimLead(s,words){
+  var out=s;words.forEach(function(w){if(out.indexOf(w+' ')===0)out=out.slice(w.length+1);else if(out===w)out=''});return out.trim();
+}
+function lookupContact(name){
+  var n=norm(name).replace(/^(ال)/,'');
+  var keys=Object.keys(contacts);
+  for(var i=0;i<keys.length;i++){var k=norm(keys[i]).replace(/^(ال)/,'');if(k===n||n.indexOf(k)===0||k.indexOf(n)===0&&n.length>2)return contacts[keys[i]]}
+  return null;
+}
+function digitsOf(s){return (s.match(/\d/g)||[]).join('')}
+
+function fetchJson(url){
+  var ctl=new AbortController();var tm=setTimeout(function(){ctl.abort()},8000);
+  return fetch(url,{signal:ctl.signal}).then(function(r){clearTimeout(tm);if(!r.ok)throw new Error('http');return r.json()});
+}
+function needNet(){return navigator.onLine?null:{say:'هذا الأمر يحتاج اتصالًا بالإنترنت، وأنا الآن بدون إنترنت.'}}
+
+function weather(city){
+  var off=needNet();if(off)return Promise.resolve(off);
+  function byCoords(lat,lon,label){
+    return fetchJson('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto')
+    .then(function(j){var c=j.current;return {say:'الطقس '+(label?'في '+label+' ':'')+'الآن: '+(WCODE[c.weather_code]||'معتدل')+'، الحرارة '+Math.round(c.temperature_2m)+' درجة مئوية، والرطوبة '+Math.round(c.relative_humidity_2m)+' بالمئة، والرياح '+Math.round(c.wind_speed_10m)+' كيلومتر في الساعة.'}});
+  }
+  if(city){
+    return fetchJson('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=1&language=ar')
+     .then(function(g){if(!g.results||!g.results.length)return {say:'لم أجد مدينة باسم '+city};var r=g.results[0];return byCoords(r.latitude,r.longitude,r.name)})
+     .catch(function(){return {say:'تعذّر جلب الطقس الآن.'}});
+  }
+  return new Promise(function(res){
+    if(!navigator.geolocation){res({say:'قل لي اسم المدينة، مثل: كيف الطقس في صنعاء.'});return}
+    navigator.geolocation.getCurrentPosition(function(p){byCoords(p.coords.latitude,p.coords.longitude,'موقعك').then(res).catch(function(){res({say:'تعذّر جلب الطقس الآن.'})})},
+      function(){res({say:'لم أستطع معرفة موقعك. قل لي اسم المدينة، مثل: كيف الطقس في عدن.'})},{timeout:8000,maximumAge:600000});
+  });
+}
+function wiki(q){
+  var off=needNet();if(off)return Promise.resolve({say:'لا أعرف هذا بدون إنترنت. جرّب أمرًا من الأوامر المحلية مثل الوقت أو المؤقت.'});
+  return fetchJson('https://ar.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(q)+'&format=json&srlimit=1&origin=*')
+   .then(function(j){
+     var h=j.query&&j.query.search&&j.query.search[0];if(!h)return {say:'لم أجد إجابة عن «'+q+'». يمكنني البحث عنه في جوجل.',link:{url:'https://www.google.com/search?q='+encodeURIComponent(q),label:'ابحث في جوجل'}};
+     return fetchJson('https://ar.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(h.title)).then(function(s){
+       var ex=(s.extract||'').split('. ').slice(0,2).join('. ');
+       return {say:ex||('وجدت صفحة عن '+h.title),link:{url:s.content_urls&&s.content_urls.mobile?s.content_urls.mobile.page:'https://ar.wikipedia.org/wiki/'+encodeURIComponent(h.title),label:'ويكيبيديا: '+h.title}};
+     });
+   }).catch(function(){return {say:'تعذّر الوصول للإنترنت الآن.'}});
+}
+
+function unitSeconds(u){
+  if(/^ثاني|^ثوان/.test(u))return 1;
+  if(/^دقيق|^دقائق|^دقايق/.test(u))return 60;
+  if(/^ساع/.test(u))return 3600;
+  return 0;
+}
+
+function calc(t){
+  var tokens=t.split(' '),out=[],cur=[],opMap={'زائد':'+','زايد':'+','جمع':'+','+':'+','ناقص':'-','طرح':'-','-':'-','ضرب':'*','في':'*','x':'*','*':'*','قسمه':'/','على':'/','/':'/'};
+  function flush(){if(cur.length){var n=parseNum(cur);if(n!==null)out.push(String(n));cur=[]}}
+  tokens.forEach(function(tk){
+    if(opMap.hasOwnProperty(tk)){flush();var o=opMap[tk];if(out.length&&/[+\-*\/]$/.test(out[out.length-1]))out[out.length-1]=o;else out.push(o)}
+    else if(numTok(tk)!==null){cur.push(tk)}
+  });
+  flush();
+  var expr=out.join(' ');
+  if(!/\d/.test(expr)||!/^[\d.+\-*\/ ]+$/.test(expr)||/[+\-*\/]\s*$/.test(expr))return null;
+  try{var v=Function('"use strict";return ('+expr+')')();if(!isFinite(v))return 'لا يمكن القسمة على صفر';v=Math.round(v*1e6)/1e6;return 'الناتج '+v}catch(e){return null}
+}
+
+// يرجع وعدًا بـ {say, link?, stop?}
+function process(raw){
+  var t=norm(raw);
+  if(!t)return Promise.resolve({say:'لم أسمع شيئًا، أعد من فضلك.'});
+  var m;
+
+  // إيقاف
+  if(/^(اسكت|اصمت|كفايه|توقف|قف|بس)$/.test(t)){return Promise.resolve({silent:true})}
+  if(/(توقف عن الاستماع|نام|اطفي|اغلق ضرغام|وقف الاستماع)/.test(t))return Promise.resolve({say:'حاضر، سأتوقف عن الاستماع. اضغط الدائرة لتشغيلي.',stop:true});
+
+  // تحيات ومحادثة
+  if(/^(السلام عليكم|سلام عليكم|سلام)/.test(t))return Promise.resolve({say:'وعليكم السلام ورحمة الله وبركاته. كيف أخدمك؟'});
+  if(/^(مرحبا|اهلا|هلا|هاي|صباح الخير|مساء الخير)/.test(t)){
+    if(/صباح/.test(t))return Promise.resolve({say:'صباح النور! تفضّل.'});
+    if(/مساء/.test(t))return Promise.resolve({say:'مساء النور! تفضّل.'});
+    return Promise.resolve({say:'أهلًا وسهلًا! أنا ضرغام، تفضّل.'});
+  }
+  if(/(كيف حالك|كيفك|شلونك|وش اخبارك|ايش اخبارك|كيف الحال)/.test(t))return Promise.resolve({say:'الحمد لله بخير، شكرًا لسؤالك. وأنت؟'});
+  if(/(شكرا|مشكور|يعطيك العافيه|الله يعطيك)/.test(t))return Promise.resolve({say:'العفو، هذا واجبي.'});
+  if(/(ما اسمك|من انت|مين انت|عرف نفسك|وش اسمك|ايش اسمك)/.test(t))return Promise.resolve({say:'أنا ضرغام، مساعدك الصوتي بالعربية. أفهم أوامرك وأنفذها، وأعمل بدون إنترنت في الأوامر المحلية.'});
+  if(/(ماذا تستطيع|وش تقدر|ايش تقدر|ساعدني|مساعده|ماذا تفعل|الاوامر)/.test(t))return Promise.resolve({say:'أستطيع: الوقت والتاريخ، الموقتات، الحاسبة، فتح التطبيقات، الاتصال والرسائل، تسجيل الملاحظات، الطقس، والبحث والإجابة عن أسئلتك عند توفر الإنترنت.'});
+  if(/(نكته|اضحكني|مزحه)/.test(t))return Promise.resolve({say:JOKES[Math.floor(Math.random()*JOKES.length)]});
+
+  // الوقت والتاريخ
+  if(/(كم الساعه|الساعه كم|ما الوقت|كم الوقت|الوقت الان|الوقت كم|قل لي الوقت|الساعه الان)/.test(t)||t==='الوقت'||t==='الساعه'){
+    var d=new Date();return Promise.resolve({say:'الساعة الآن '+d.toLocaleTimeString('ar',{hour:'numeric',minute:'2-digit'})});
+  }
+  if(/(تاريخ|ايش اليوم|وش اليوم|ما اليوم|اي يوم|كم اليوم|اليوم كم)/.test(t)){
+    var dd=new Date();
+    var g=dd.toLocaleDateString('ar',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var h='';try{h=dd.toLocaleDateString('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'})}catch(e){}
+    return Promise.resolve({say:'اليوم '+g+(h?'، الموافق '+h:'')});
+  }
+
+  // مؤقت
+  m=t.match(/(?:موقت|عداد|منبه|نبهني|ذكرني|فكرني|ايقاظ).*?(?:بعد|لمده|لمدة|مدته)?\s*(.*?)\s*(ثانيتين|دقيقتين|ساعتين|ثانيه|ثواني|ثانيه|دقيقه|دقائق|دقايق|ساعه|ساعات)/);
+  if(m&&/(موقت|عداد|منبه|نبهني|ذكرني|فكرني|ايقاظ)/.test(t)){
+    var unit=m[2],mult,count;
+    if(/ين$/.test(unit)&&/(ثانيتين|دقيقتين|ساعتين)/.test(unit)){count=2;mult=unitSeconds(unit)}
+    else{mult=unitSeconds(unit);count=parseNum(m[1].split(' '));if(count===null)count=1}
+    // نصف/ربع ساعة
+    if(/نصف/.test(m[1]))count=.5;
+    if(/ربع/.test(m[1]))count=.25;
+    var sec=Math.round(count*mult);
+    if(sec>0){
+      addTimer(sec,'');
+      var mm=Math.floor(sec/60),ss=sec%60,hh=Math.floor(mm/60);mm%=60;
+      var parts=[];if(hh)parts.push(hh+' ساعة');if(mm)parts.push(mm+' دقيقة');if(ss)parts.push(ss+' ثانية');
+      return Promise.resolve({say:'تمام، ضبطت مؤقتًا لمدة '+parts.join(' و')});
+    }
+  }
+  if(/(الغ|الغي|امسح|احذف|ايقاف).*(الموقت|الموقتات|المنبه|العداد)/.test(t)){timers=[];drawTimers();return Promise.resolve({say:'ألغيت الموقتات.'})}
+
+  // ملاحظات
+  m=t.match(/^(?:سجل|دون|اكتب|احفظ|سجلي)\s*(?:لي)?\s*(?:ملاحظه|ملاحظة)?\s*(.+)/);
+  if(m&&/(ملاحظه|ملاحظة)/.test(t)){
+    var body=raw.replace(/^.*?ملاحظ[ةه]\s*/,'').trim()||m[1];
+    notes.push({t:body,d:Date.now()});save('dh_notes',notes);drawNotes();
+    return Promise.resolve({say:'سجلت الملاحظة.'});
+  }
+  if(/(اقرا|اقرأ|اسمعني|ماهي|ما هي|عرض).*(ملاحظاتي|الملاحظات)/.test(t)||t==='ملاحظاتي'){
+    if(!notes.length)return Promise.resolve({say:'لا توجد ملاحظات محفوظة.'});
+    return Promise.resolve({say:'لديك '+notes.length+' ملاحظات. '+notes.slice(-5).map(function(n,i){return (i+1)+': '+n.t}).join('. ')});
+  }
+  if(/(امسح|احذف|الغ).*(ملاحظاتي|الملاحظات)/.test(t)){notes=[];save('dh_notes',notes);drawNotes();return Promise.resolve({say:'حذفت كل الملاحظات.'})}
+
+  // اتصال
+  m=t.match(/^(?:اتصل|كلم|كلمني|اتصل لي|اتصلي)\s*(?:ب|بـ|على|الى)?\s*(?:رقم)?\s*(.+)/);
+  if(m){
+    var who=m[1].trim(),num=digitsOf(who);
+    if(num.length<5){var c=lookupContact(who);if(c)num=digitsOf(c);else num=''}
+    if(num){return Promise.resolve({say:'جاري الاتصال بـ'+(digitsOf(who).length>=5?' الرقم':' '+who),link:{url:'tel:'+num,label:'اتصل الآن '+num},auto:'tel:'+num})}
+    return Promise.resolve({say:'لم أجد «'+who+'» في جهات الاتصال. أضفه من قسم جهات الاتصال أو قل الرقم.'});
+  }
+  // رسالة
+  m=t.match(/^(?:ارسل|ابعث|ارسلي|ارسل لي)\s*(?:رساله|واتساب|رساله واتساب|رساله نصيه)?\s*(?:الى|ل|لـ|ا)?\s*(\S+)\s*(?:(?:و)?(?:قل|قول|تقول|نصها|مضمونها|اكتب)\s+(.*))?$/);
+  if(m&&/(رساله|واتساب|ابعث|ارسل)/.test(t)&&/(الى|ل|رساله|واتساب)/.test(t)){
+    var who2=m[1],text=m[2]||'';
+    var cn=digitsOf(who2).length>=5?digitsOf(who2):digitsOf(lookupContact(who2)||'');
+    if(cn){
+      var rawText='';var mt=raw.match(/(?:قل|قول|تقول|نصها|مضمونها|اكتب)\s+(.*)$/);if(mt)rawText=mt[1];
+      var url='https://wa.me/'+cn+(rawText?'?text='+encodeURIComponent(rawText):'');
+      return Promise.resolve({say:'جهّزت رسالة واتساب إلى '+who2+(rawText?': '+rawText:''),link:{url:url,label:'افتح واتساب'},auto:url});
+    }
+    return Promise.resolve({say:'لم أجد رقم «'+who2+'». أضفه من جهات الاتصال.'});
+  }
+
+  // الحاسبة
+  if(/^(احسب|كم يساوي|كم ناتج|كم حاصل|حاسبه)/.test(t)||/^[\d\s.+\-*\/]+$/.test(t)||/\d\s*(زائد|ناقص|ضرب|قسمه|على|في)\s*\d/.test(t)){
+    var r=calc(trimLead(t,['احسب','كم يساوي','كم ناتج','كم حاصل','حاسبه']));
+    if(r)return Promise.resolve({say:r});
+    return Promise.resolve({say:'لم أفهم العملية الحسابية. قل مثلًا: احسب خمسة وعشرين ضرب أربعة.'});
+  }
+
+  // قلب العملة والنرد
+  if(/(عمله|صوره او كتابه|صوره ام كتابه)/.test(t)&&/(اقذف|ارمي|ارم|قلب)/.test(t))return Promise.resolve({say:Math.random()<.5?'صورة':'كتابة'});
+  if(/(نرد|زهر)/.test(t))return Promise.resolve({say:'خرج الرقم '+(1+Math.floor(Math.random()*6))});
+
+  // البطارية
+  if(/(بطاريه|شحن)/.test(t)){
+    if(navigator.getBattery)return navigator.getBattery().then(function(b){return {say:'البطارية '+Math.round(b.level*100)+' بالمئة'+(b.charging?' وهي قيد الشحن':'')}}).catch(function(){return {say:'تعذّر قراءة البطارية.'}});
+    return Promise.resolve({say:'متصفحك لا يسمح بقراءة البطارية.'});
+  }
+
+  // الطقس
+  if(/(طقس|حاله الجو|الجو|درجه الحراره|الحراره|ممطر|مطر)/.test(t)){
+    var city='';var cm=t.match(/(?:في|ب|بـ|عند)\s+(?:مدينه\s+)?([^\s].*)$/);
+    if(cm){city=cm[1].replace(/\s*(الان|اليوم|الحين)$/,'').trim()}
+    return weather(city);
+  }
+
+  // فتح مواقع وتطبيقات
+  m=t.match(/^(?:افتح|شغل|روح الى|روح|اذهب الى|ادخل)\s*(?:لي)?\s*(?:تطبيق|موقع|برنامج)?\s*(.+)$/);
+  if(m){
+    var target=m[1].trim();
+    // يوتيوب بحث: شغل X في يوتيوب
+    var ym=target.match(/^(.+?)\s+(?:في|على|ع)\s+(?:اليوتيوب|يوتيوب)$/);
+    if(ym){var uq=ym[1];return Promise.resolve({say:'أبحث عن '+uq+' في يوتيوب',link:{url:'https://www.youtube.com/results?search_query='+encodeURIComponent(uq),label:'افتح يوتيوب'},auto:'https://www.youtube.com/results?search_query='+encodeURIComponent(uq)})}
+    var key=target.replace(/^ال/,'');
+    var found=null;Object.keys(APPS).forEach(function(k){if(k===target||k===key||('ال'+k)===target)found=APPS[k]});
+    if(found){
+      var u=found.url;
+      return Promise.resolve({say:'جاري فتح '+found.n,link:{url:u,label:'افتح '+found.n},auto:u});
+    }
+    if(/\.(com|net|org|sa|ye|io)/.test(target)){var site='https://'+target.replace(/\s/g,'');return Promise.resolve({say:'جاري فتح الموقع',link:{url:site,label:'افتح'},auto:site})}
+    if(/^(شغل)\s/.test(t)){var yq=target;return Promise.resolve({say:'أبحث عن '+yq+' في يوتيوب',link:{url:'https://www.youtube.com/results?search_query='+encodeURIComponent(yq),label:'افتح يوتيوب'},auto:'https://www.youtube.com/results?search_query='+encodeURIComponent(yq)})}
+    return Promise.resolve({say:'لا أعرف التطبيق «'+target+'». سأبحث عنه في جوجل.',link:{url:'https://www.google.com/search?q='+encodeURIComponent(target),label:'ابحث'},auto:'https://www.google.com/search?q='+encodeURIComponent(target)});
+  }
+
+  // خرائط واتجاهات
+  m=t.match(/^(?:وين|اين|دلني على|خذني الى|اتجاهات الى|اتجاه الى|طريق الى|خرائط)\s*(.+)$/);
+  if(m&&/(اتجاه|طريق|خذني|دلني|خرائط|وين|اين)/.test(t)){
+    var place=m[1].replace(/^(اقرب|الى)\s+/,function(s){return s.indexOf('اقرب')===0?'اقرب ':''}).trim();
+    var mu='https://www.google.com/maps/search/'+encodeURIComponent(place);
+    return Promise.resolve({say:'أبحث في الخريطة عن '+place,link:{url:mu,label:'افتح الخريطة'},auto:mu});
+  }
+
+  // بحث
+  m=t.match(/^(?:ابحث عن|ابحث|دور على|دور عن|سيرش|قوقل|جوجل)\s*(.+)$/);
+  if(m){var q=m[1];var su='https://www.google.com/search?q='+encodeURIComponent(q);return Promise.resolve({say:'أبحث عن '+q,link:{url:su,label:'نتائج البحث'},auto:su})}
+
+  // أسئلة معرفية (تحتاج إنترنت)
+  m=t.match(/^(?:من هو|من هي|من هم|ما هو|ما هي|ما هم|ماذا تعرف عن|اخبرني عن|عرفني ب|عرفني على|معلومات عن|ما معنى|وش هو|وش هي|ايش هو|ايش هي|مين|وش معنى)\s*(.+)$/);
+  if(m)return wiki(m[1]);
+
+  // غير مفهوم: إن كان متصلًا جرّب المعرفة
+  if(navigator.onLine&&t.split(' ').length>=2)return wiki(t);
+  return Promise.resolve({say:'لم أفهم الأمر. جرّب مثلًا: كم الساعة، أو: مؤقت خمس دقائق.'});
+}
+
+/* ---------- تنفيذ ورد ---------- */
+var busy=false;
+function say(text){
+  var was=wantListen;
+  speaking=true;stopRec();setState('speak');
+  return speak(text).then(function(){
+    speaking=false;
+    if(was&&wantListen){setState('listen','قل «ضرغام» ثم أمرك');startRec()}
+  });
+}
+function run(raw,fromVoice){
+  if(!raw||!raw.trim())return Promise.resolve();
+  addMsg('me',raw);
+  return process(raw).then(function(res){
+    if(res.silent){stopSpeak();return}
+    if(res.say){addMsg('bot',res.say,res.link)}
+    if(res.auto){try{window.location.href=res.auto}catch(e){}}
+    var p=res.say?say(res.say):Promise.resolve();
+    return p.then(function(){if(res.stop){stopListening()}});
+  }).catch(function(e){addMsg('bot','حدث خطأ غير متوقع.')});
+}
+
+/* ---------- التعرف على الصوت ---------- */
+var rec=null,recActive=false,wantListen=false,speaking=false,awake=false,awakeTimer=null,restartTimer=null;
+function stopRec(){
+  clearTimeout(restartTimer);
+  if(rec){try{rec.onend=null;rec.abort()}catch(e){}rec=null}
+  recActive=false;
+}
+function enterAwake(){
+  awake=true;chime();setState('awake','أسمعك، ما أمرك؟');
+  clearTimeout(awakeTimer);
+  awakeTimer=setTimeout(function(){awake=false;if(wantListen&&!speaking)setState('listen','قل «ضرغام» ثم أمرك')},9000);
+}
+function leaveAwake(){awake=false;clearTimeout(awakeTimer)}
+function startRec(){
+  if(!SR||!wantListen||speaking||recActive)return;
+  var r=new SR();
+  r.lang='ar-SA';r.continuous=true;r.interimResults=true;r.maxAlternatives=3;
+  if(!navigator.onLine&&'processLocally' in r){try{r.processLocally=true}catch(e){}}
+  r.onstart=function(){recActive=true};
+  r.onresult=function(e){
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      var res=e.results[i];
+      var top=res[0].transcript;
+      heardEl.textContent=top;
+      if(!res.isFinal){
+        // استجابة سريعة عند سماع النداء
+        if(!awake){var w=norm(top).split(' ');if(findWake(w)>=0&&w.length===1+findWake(w)){/* انتظر النتيجة النهائية */}}
+        continue;
+      }
+      var alts=[];for(var a=0;a<res.length;a++)alts.push(res[a].transcript);
+      handleFinal(alts);
+    }
+  };
+  r.onerror=function(e){
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      wantListen=false;stopRec();setState('off','تم رفض إذن الميكروفون');
+      warn('لا يمكنني السماع بدون إذن الميكروفون. اسمح به من إعدادات المتصفح (أيقونة القفل بجانب العنوان) ثم أعد المحاولة. ويلزم فتح الصفحة عبر رابط https.');
+    }else if(e.error==='language-not-supported'){
+      wantListen=false;stopRec();setState('off','اللغة العربية غير متوفرة للتعرف المحلي');
+      warn('جهازك لا يملك التعرف الصوتي العربي بدون إنترنت. اتصل بالإنترنت، أو حمّل الحزمة من الإعدادات، أو اكتب أوامرك.');
+    }else if(e.error==='network'){
+      statusEl.textContent='لا يوجد اتصال للتعرف الصوتي، يمكنك الكتابة';
+    }
+  };
+  r.onend=function(){
+    recActive=false;rec=null;
+    if(wantListen&&!speaking){restartTimer=setTimeout(startRec,300)}
+  };
+  rec=r;
+  try{r.start()}catch(e){rec=null;restartTimer=setTimeout(startRec,800)}
+}
+function handleFinal(alts){
+  if(speaking||busy)return;
+  var texts=alts.map(function(a){return norm(a)});
+  if(awake){
+    leaveAwake();
+    var cmd=alts[0];
+    // لو كرّر النداء داخل الأمر احذفه
+    var ws=texts[0].split(' '),wi=findWake(ws);
+    if(wi===0&&ws.length>1){cmd=ws.slice(1).join(' ')}
+    busy=true;run(cmd,true).then(function(){busy=false});
+    return;
+  }
+  for(var k=0;k<texts.length;k++){
+    var words=texts[k].split(' ');var idx=findWake(words);
+    if(idx>=0){
+      var rest=words.slice(idx+1).join(' ');
+      // احتفظ بالنص الأصلي ما أمكن
+      if(rest){busy=true;chime();run(rest,true).then(function(){busy=false})}
+      else{enterAwake()}
+      return;
+    }
+  }
+}
+function startListening(){
+  if(!SR){warn('متصفحك لا يدعم التعرف على الصوت. استخدم Chrome على أندرويد، أو اكتب أوامرك.');return}
+  warn('');wantListen=true;ac();
+  setState('listen','قل «ضرغام» ثم أمرك');
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(function(){})}catch(e){}
+  startRec();
+}
+function stopListening(){wantListen=false;leaveAwake();stopRec();stopSpeak();setState('off','متوقف. اضغط الدائرة للتشغيل');heardEl.textContent=''}
+orb.addEventListener('click',function(){
+  if(wantListen){stopListening()}else{startListening()}
+});
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'&&wantListen&&!recActive&&!speaking)startRec();
+});
+
+/* ---------- الكتابة ---------- */
+$('#typed').addEventListener('submit',function(e){
+  e.preventDefault();var v=$('#typedIn').value;$('#typedIn').value='';
+  if(!v.trim())return;
+  var ws=norm(v).split(' ');var wi=findWake(ws);
+  if(wi===0&&ws.length>1){v=v.trim().split(/\s+/).slice(1).join(' ')}
+  ac();run(v,false);
+});
+
+/* ---------- جهات الاتصال والملاحظات ---------- */
+function drawContacts(){
+  var ul=$('#cList');ul.textContent='';
+  Object.keys(contacts).forEach(function(k){
+    var li=document.createElement('li');var s=document.createElement('span');s.textContent=k+' — '+contacts[k];
+    var b=document.createElement('button');b.textContent='حذف';b.type='button';
+    b.onclick=function(){delete contacts[k];save('dh_contacts',contacts);drawContacts()};
+    li.appendChild(s);li.appendChild(b);ul.appendChild(li);
+  });
+}
+$('#cAdd').onclick=function(){
+  var n=$('#cName').value.trim(),p=digitsOf(norm($('#cNum').value));
+  if(!n||p.length<5)return;
+  contacts[n]=p;save('dh_contacts',contacts);$('#cName').value='';$('#cNum').value='';drawContacts();
+};
+function drawNotes(){
+  var ul=$('#nList');ul.textContent='';
+  if(!notes.length){var li0=document.createElement('li');li0.textContent='لا توجد ملاحظات بعد.';ul.appendChild(li0);return}
+  notes.forEach(function(n,i){
+    var li=document.createElement('li');var s=document.createElement('span');s.textContent=n.t;
+    var b=document.createElement('button');b.textContent='حذف';b.type='button';
+    b.onclick=function(){notes.splice(i,1);save('dh_notes',notes);drawNotes()};
+    li.appendChild(s);li.appendChild(b);ul.appendChild(li);
+  });
+}
+drawContacts();drawNotes();
+
+/* ---------- الإعدادات ---------- */
+$('#alias').value=alias;
+$('#aliasSave').onclick=function(){alias=$('#alias').value.trim();save('dh_alias',alias);addMsg('bot',alias?'حفظت نداءً بديلًا: '+alias:'حذفت النداء البديل')};
+var offNote=$('#offNote');
+if(SR&&SR.available){
+  SR.available({langs:['ar-SA'],processLocally:true}).then(function(a){
+    offNote.textContent=({available:'التعرف الصوتي العربي بدون إنترنت جاهز على جهازك.',downloadable:'الحزمة العربية غير محمّلة. اضغط الزر وأنت متصل بالإنترنت.',downloading:'جاري تحميل الحزمة...',unavailable:'جهازك أو متصفحك لا يدعم التعرف الصوتي المحلي، وسيعتمد الصوت على الإنترنت. الكتابة والأوامر المحلية تعمل بدون إنترنت.'})[a]||'';
+  }).catch(function(){});
+}else{
+  offNote.textContent='متصفحك لا يدعم التعرف الصوتي المحلي، وسيعتمد الصوت على الإنترنت. الكتابة والأوامر المحلية تعمل بدون إنترنت.';
+}
+$('#offlinePack').onclick=function(){
+  if(!(SR&&SR.install)){offNote.textContent='هذه الخاصية غير مدعومة في متصفحك.';return}
+  offNote.textContent='جاري التحميل...';
+  SR.install({langs:['ar-SA'],processLocally:true}).then(function(ok){offNote.textContent=ok?'تم تحميل الحزمة، صار بإمكانك الكلام بدون إنترنت.':'تعذّر تحميل الحزمة.'}).catch(function(){offNote.textContent='تعذّر تحميل الحزمة.'});
+};
+
+/* ---------- اقتراحات ---------- */
+['ضرغام كم الساعة','مؤقت خمس دقائق','احسب خمسة وعشرين ضرب أربعة','افتح يوتيوب','كيف الطقس في صنعاء','سجّل ملاحظة اشتري خبز','من هو ابن سينا','نكتة'].forEach(function(s){
+  var c=document.createElement('button');c.type='button';c.className='chip';c.textContent=s;
+  c.onclick=function(){ac();var ws=norm(s).split(' ');run(findWake(ws)===0?s.split(' ').slice(1).join(' '):s,false)};
+  $('#chips').appendChild(c);
+});
+
+addMsg('bot','أنا ضرغام. اضغط الدائرة ثم قل «ضرغام» وبعدها أمرك.');
+if(!SR)warn('متصفحك لا يدعم التعرف على الصوت. افتحه من Chrome على أندرويد، أو اكتب أوامرك في الخانة.');
+if(location.protocol==='http:'&&location.hostname!=='localhost')warn('الميكروفون لا يعمل إلا عبر رابط https. ارفع الملفات على استضافة مجانية (مثل GitHub Pages) وافتحها من هناك.');
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){navigator.serviceWorker.register('sw.js').catch(function(){})}
+})();
+</script>
+</body>
+</html>
